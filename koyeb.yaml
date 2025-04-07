@@ -3,7 +3,7 @@ services:
   - name: web
     instance_type: small
     git:
-      repository: phoenixetf/platform
+      repository: MetrixMessiah/PhoenixETF
       branch: main
     build:
       builder: dockerfile
