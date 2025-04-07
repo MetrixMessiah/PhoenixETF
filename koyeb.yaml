@@ -1,0 +1,41 @@
+name: phoenixetf
+services:
+  - name: web
+    instance_type: small
+    git:
+      repository: phoenixetf/platform
+      branch: main
+    build:
+      builder: dockerfile
+    ports:
+      - port: 8000
+        protocol: http
+    env:
+      - key: APP_NAME
+        value: PhoenixETF
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: "false"
+      - key: APP_URL
+        value: ${APP_URL}
+      - key: DB_CONNECTION
+        value: pgsql
+      - key: DB_HOST
+        value: ${DB_HOST}
+      - key: DB_PORT
+        value: "5432"
+      - key: DB_DATABASE
+        value: ${DB_DATABASE}
+      - key: DB_USERNAME
+        value: ${DB_USERNAME}
+      - key: DB_PASSWORD
+        value: ${DB_PASSWORD}
+      - key: ALPHA_VANTAGE_API_KEY
+        value: ${ALPHA_VANTAGE_API_KEY}
+      - key: COINMARKETCAP_API_KEY
+        value: ${COINMARKETCAP_API_KEY}
+      - key: SESSION_SECURE_COOKIE
+        value: "true"
+      - key: SANCTUM_STATEFUL_DOMAINS
+        value: ${APP_URL} 
