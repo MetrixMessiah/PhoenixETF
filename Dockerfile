@@ -1,4 +1,4 @@
-FROM php:8.2-fpm
+FROM php:8.2-apache
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
@@ -19,39 +19,37 @@ RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 # Install PHP extensions
 RUN docker-php-ext-install pdo_pgsql pgsql mbstring exif pcntl bcmath gd
 
+# Configure Apache
+COPY docker/vhost.conf /etc/apache2/sites-available/000-default.conf
+RUN a2enmod rewrite
+
 # Get latest Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 # Set working directory
-WORKDIR /var/www
+WORKDIR /var/www/html
 
-# Copy composer files first to leverage Docker cache
+# Copy composer files and install dependencies
 COPY composer.json composer.lock ./
+RUN composer install --no-scripts --no-autoloader
 
-# Install composer dependencies
-RUN composer install --no-script --no-autoloader
-
-# Copy the rest of the application
+# Copy the application files
 COPY . .
 
 # Generate autoloader and run scripts
-RUN composer dump-autoload --optimize && \
-    composer run-script post-install-cmd
-
-# Install npm dependencies and build assets
-RUN npm install && npm run build
+RUN composer dump-autoload --optimize
 
 # Set permissions
-RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
+RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 
-# Create a deployment script
+# Create startup script
 RUN echo '#!/bin/sh\n\
 php artisan migrate --force\n\
 php artisan config:cache\n\
 php artisan route:cache\n\
 php artisan view:cache\n\
-php artisan serve --host=0.0.0.0 --port=8000' > /var/www/deploy.sh && \
-chmod +x /var/www/deploy.sh
+apache2-foreground' > /usr/local/bin/startup && \
+chmod +x /usr/local/bin/startup
 
-EXPOSE 8000
-CMD ["/var/www/deploy.sh"] 
+EXPOSE 80
+CMD ["/usr/local/bin/startup"] 

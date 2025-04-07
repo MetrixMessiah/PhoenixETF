@@ -8,7 +8,7 @@ services:
     build:
       builder: dockerfile
     ports:
-      - port: 8000
+      - port: 80
         protocol: http
     env:
       - key: APP_NAME
@@ -19,6 +19,8 @@ services:
         value: "false"
       - key: APP_URL
         value: ${APP_URL}
+      - key: APP_KEY
+        value: ${APP_KEY}
       - key: DB_CONNECTION
         value: pgsql
       - key: DB_HOST
